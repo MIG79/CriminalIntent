@@ -9,15 +9,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
-
-/**
- * Created by octubre on 29/12/17.
- */
 
 public class CrimeListFragment extends Fragment {
 
@@ -49,12 +45,14 @@ public class CrimeListFragment extends Fragment {
         private TextView mTitleTextView;
         private TextView mDateTextView;
         private Crime mCrime;
+        private Button mButton;
 
         public CrimeHolder(LayoutInflater inflater, ViewGroup parent) {
             super(inflater.inflate(R.layout.list_item_crime, parent, false));
-
+            //itemView is inherited from ViewHolder.
             mTitleTextView = itemView.findViewById(R.id.crime_title);
             mDateTextView = itemView.findViewById(R.id.crime_date);
+            mButton = itemView.findViewById(R.id.button_police);
 
             itemView.setOnClickListener(this);
         }
@@ -67,7 +65,8 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public void onClick(View view) {
-            Toast.makeText(getActivity(), mCrime.getTitle() + " clicked!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), mCrime.getTitle()
+                    + " clicked!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -81,6 +80,7 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public CrimeHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
             return new CrimeHolder(layoutInflater, parent);
         }
@@ -94,6 +94,13 @@ public class CrimeListFragment extends Fragment {
         @Override
         public int getItemCount() {
             return mCrimes.size();
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return mCrimes.get(position).isRequiresPolice() ?
+                    super.getItemViewType(R.layout.list_item_crime) :
+                    super.getItemViewType(R.layout.list_item_crime_police);
         }
     }
 }
