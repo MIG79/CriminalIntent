@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,12 +46,14 @@ public class CrimeListFragment extends Fragment {
         private TextView mTitleTextView;
         private TextView mDateTextView;
         private Crime mCrime;
+        private ImageView mSolvedImageView;
 
-        public CrimeHolder(View parent) {
-            super(parent);
+        public CrimeHolder(LayoutInflater inflater, ViewGroup parent) {
+            super(inflater.inflate(R.layout.list_item_crime, parent, false));
             //itemView is inherited from ViewHolder.
             mTitleTextView = itemView.findViewById(R.id.crime_title);
             mDateTextView = itemView.findViewById(R.id.crime_date);
+            mSolvedImageView = itemView.findViewById(R.id.crime_solved);
 
             itemView.setOnClickListener(this);
         }
@@ -59,6 +62,7 @@ public class CrimeListFragment extends Fragment {
             mCrime = crime;
             mTitleTextView.setText(mCrime.getTitle());
             mDateTextView.setText(mCrime.getDate().toString());
+            mSolvedImageView.setVisibility(crime.isSolved() ? View.VISIBLE : View.INVISIBLE);
         }
 
         @Override
@@ -68,65 +72,25 @@ public class CrimeListFragment extends Fragment {
         }
     }
 
-    private class CrimeHolderPolice extends RecyclerView.ViewHolder implements View.OnClickListener {
-
-        private Crime mCrime;
-        private Button mButton;
-
-        public CrimeHolderPolice(View parent) {
-            super(parent);
-
-            //itemView is inherited from ViewHolder.
-            mButton = itemView.findViewById(R.id.button_police);
-            mButton.setOnClickListener((View view) -> {
-                    Toast.makeText(getContext(), getString(R.string.police_required), Toast.LENGTH_SHORT).show();
-                });
-
-            itemView.setOnClickListener(this);
-        }
-
-        @Override
-        public void onClick(View view) {
-            Toast.makeText(getActivity(), mCrime.getTitle()
-                    + " clicked!", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private class CrimeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private class CrimeAdapter extends RecyclerView.Adapter<CrimeHolder> {
 
         private List<Crime> mCrimes;
-
-        private final int POLICE_REQUIRED = 0, POLICE_NOT_REQUIRED = 1;
 
         public CrimeAdapter(List<Crime> crimes) {
             mCrimes = crimes;
         }
 
         @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public CrimeHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
-            RecyclerView.ViewHolder viewHolder = null;
-
-            switch(viewType) {
-                case 0:
-                    View v0 = layoutInflater.inflate(R.layout.list_item_crime_police, parent, false);
-                    viewHolder = new CrimeHolderPolice(v0);
-                    break;
-                case 1:
-                    View v1 = layoutInflater.inflate(R.layout.list_item_crime, parent, false);
-                    viewHolder = new CrimeHolder(v1);
-            }
-
-            return viewHolder;
+            return new CrimeHolder(layoutInflater, parent);
         }
 
         @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+        public void onBindViewHolder(CrimeHolder holder, int position) {
             Crime crime = mCrimes.get(position);
-            if(holder instanceof CrimeHolder) {
-                ((CrimeHolder) holder).bind(crime);
-            }
+            holder.bind(crime);
         }
 
         @Override
@@ -134,13 +98,5 @@ public class CrimeListFragment extends Fragment {
             return mCrimes.size();
         }
 
-        @Override
-        public int getItemViewType(int position) {
-            if (mCrimes.get(position).isRequiresPolice()) {
-                return POLICE_REQUIRED;
-            } else {
-                return POLICE_NOT_REQUIRED;
-            }
-        }
     }
 }
