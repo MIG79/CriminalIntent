@@ -85,10 +85,6 @@ public class CrimeListFragment extends Fragment {
             itemView.setOnClickListener(this);
         }
 
-        public void bind(Crime crime) {
-            mCrime = crime;
-        }
-
         @Override
         public void onClick(View view) {
             Toast.makeText(getActivity(), mCrime.getTitle()
