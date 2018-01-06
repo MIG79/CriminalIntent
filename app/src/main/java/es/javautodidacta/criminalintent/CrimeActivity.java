@@ -6,6 +6,10 @@ import android.support.v4.app.Fragment;
 
 import java.util.UUID;
 
+/**
+ * Clase sustituida por CrimePagerActivity.
+ */
+
 public class CrimeActivity extends SingleFragmentActivity {
 
     private static final String EXTRA_CRIME_ID = "es.javautodidacta.criminalintent.crime_id";
