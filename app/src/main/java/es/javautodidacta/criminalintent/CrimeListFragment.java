@@ -52,6 +52,7 @@ public class CrimeListFragment extends Fragment {
 
         private TextView mTitleTextView;
         private TextView mDateTextView;
+        private TextView mTimeTextView;
         private Crime mCrime;
         private ImageView mSolvedImageView;
 
@@ -60,6 +61,7 @@ public class CrimeListFragment extends Fragment {
             //itemView is inherited from ViewHolder.
             mTitleTextView = itemView.findViewById(R.id.crime_title);
             mDateTextView = itemView.findViewById(R.id.crime_date);
+            mTimeTextView = itemView.findViewById(R.id.crime_time);
             mSolvedImageView = itemView.findViewById(R.id.crime_solved);
 
             itemView.setOnClickListener(this);
@@ -73,6 +75,7 @@ public class CrimeListFragment extends Fragment {
             String dateToPrint = dateFormat.format(date);
             mTitleTextView.setText(mCrime.getTitle());
             mDateTextView.setText(dateToPrint);
+            mTimeTextView.setText(mCrime.getTime().toString());
             mSolvedImageView.setVisibility(crime.isSolved() ? View.VISIBLE : View.INVISIBLE);
         }
 
