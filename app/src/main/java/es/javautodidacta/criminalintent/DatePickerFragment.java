@@ -2,25 +2,31 @@ package es.javautodidacta.criminalintent;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.DatePicker;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.UUID;
 
 public class DatePickerFragment extends DialogFragment {
 
     private static final String ARG_DATE = "date";
     private DatePicker mDatePicker;
     public static final String EXTRA_DATE = "es.javautodidacta.criminalintent.date";
+    private Button mOkButton;
 
     public static DatePickerFragment newInstance(Date date) {
         Bundle args = new Bundle();
@@ -31,9 +37,9 @@ public class DatePickerFragment extends DialogFragment {
         return fragment;
     }
 
-    @NonNull
+    @Nullable
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         Date date = (Date) getArguments().getSerializable(ARG_DATE);
 
         Calendar calendar = Calendar.getInstance();
@@ -42,8 +48,7 @@ public class DatePickerFragment extends DialogFragment {
         int month = calendar.get(Calendar.MONTH);
         int day = calendar.get(Calendar.DAY_OF_MONTH);
 
-        View v = LayoutInflater.from(getActivity())
-                .inflate(R.layout.dialog_date, null);
+        View v = LayoutInflater.from(getActivity()).inflate(R.layout.dialog_date, null);
 
         mDatePicker = v.findViewById(R.id.dialog_date_picker);
         mDatePicker.init(year, month, day, null);
@@ -51,18 +56,14 @@ public class DatePickerFragment extends DialogFragment {
         return new AlertDialog.Builder(getActivity())
                 .setView(v)
                 .setTitle(R.string.date_picker_title)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        int year = mDatePicker.getYear();
-                        int month = mDatePicker.getMonth();
-                        int day = mDatePicker.getDayOfMonth();
-
-                        Date date = new GregorianCalendar(year, month, day).getTime();
-                        sendResult(Activity.RESULT_OK, date);
-                    }
-                })
+                .setPositiveButton(android.R.string.ok, null)
                 .create();
+    }
+
+    public static Intent newIntent(Context context, Date crimeDate) {
+        Intent intent = new Intent(context, DatePickerFragment.class);
+        intent.putExtra(EXTRA_DATE, crimeDate);
+        return intent;
     }
 
     private void sendResult(int resultCode, Date date) {

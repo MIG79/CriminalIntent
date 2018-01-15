@@ -6,4 +6,15 @@
     <string name="crime_solved_label">Solved</string>
     <string name="police_required">Police required</string>
     <string name="date_picker_title">Date of crime:</string>
+    <string name="new_crime">New Crime</string>
+    <string name="show_subtitle">Show subtitle</string>
+
+    <plurals name="subtitle_plural">
+        <item quantity="one">%1$d crime</item>
+        <item quantity="other">%1$d crimes</item>
+    </plurals>
+
+    <string name="hide_subtitle">Hide subtitle</string>
+    <string name="delete_crime">Delete crime</string>
+    <string name="no_crimes">NO CRIMES!</string>
 </resources>
