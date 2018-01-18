@@ -17,4 +17,6 @@
     <string name="hide_subtitle">Hide subtitle</string>
     <string name="delete_crime">Delete crime</string>
     <string name="no_crimes">NO CRIMES!</string>
+    <string name="crime_suspect_text">Choose suspect</string>
+    <string name="crime_report_text">Send crime report</string>
 </resources>
