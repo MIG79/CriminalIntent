@@ -1,12 +1,14 @@
 package es.javautodidacta.criminalintent;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,6 +17,7 @@ import android.support.v4.app.ShareCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,6 +29,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
 
@@ -37,11 +41,14 @@ public class CrimeFragment extends Fragment {
     private CheckBox mSolvedCheckBox;
     private Button mReportButton;
     private Button mSuspectButton;
+    private Button mCallSuspect;
 
     private static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE = "DialogDate";
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_CONTACT = 1;
+
+    public static final String TAG = "Crime Fragment";
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -144,6 +151,18 @@ public class CrimeFragment extends Fragment {
         mSolvedCheckBox.setOnCheckedChangeListener((CompoundButton compoundButton,
                                                     boolean isChecked) -> mCrime.setSolved(isChecked));
 
+        mCallSuspect = v.findViewById(R.id.call_suspect);
+        if(mCrime.getPhoneNumber() != null) {
+            Log.e(TAG, mCrime.getPhoneNumber());
+            mCallSuspect.setVisibility(View.VISIBLE);
+            mCallSuspect.setText(mCrime.getPhoneNumber());
+            mCallSuspect.setOnClickListener((View view) -> {
+                    Intent intent = new Intent(Intent.ACTION_DIAL);
+                    intent.setData(Uri.parse("tel:" + mCrime.getPhoneNumber()));
+                    startActivity(intent);
+            });
+        }
+
         return v;
     }
 
@@ -168,6 +187,8 @@ public class CrimeFragment extends Fragment {
             return;
         }
 
+        String suspect;
+
         if(requestCode == REQUEST_DATE) {
             Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             mCrime.setDate(date);
@@ -183,7 +204,8 @@ public class CrimeFragment extends Fragment {
 
             // Perform your query - the contactUri is like a "where" clause here
             try(Cursor c = getActivity().getContentResolver()
-                    .query(contactUri, queryFields, null, null, null)) {
+                    .query(contactUri, queryFields,
+                            null, null, null)) {
 
                 // Double-check that you actually got results
                 if(c.getCount() == 0) {
@@ -192,13 +214,32 @@ public class CrimeFragment extends Fragment {
 
                 // Pull out the first column of the first row of data - that is your suspect's name
                 c.moveToFirst();
-                String suspect = c.getString(0);
+                suspect = c.getString(0);
+
                 mCrime.setSuspect(suspect);
                 mSuspectButton.setText(suspect);
             }
+
+            ContentResolver cr = getActivity().getContentResolver();
+            Cursor cursor = cr.query(ContactsContract.Contacts.CONTENT_URI, null,
+                    "DISPLAY_NAME = '" + suspect + "'", null, null);
+            if (cursor.moveToFirst()) {
+                String contactId =
+                        cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts._ID));
+
+                Cursor phones = cr.query(Phone.CONTENT_URI, null,
+                        Phone.CONTACT_ID + " = " + contactId, null, null);
+
+                if (phones.moveToFirst()) {
+                    String number = phones.getString(phones.getColumnIndex(Phone.NUMBER));
+                    mCallSuspect.setVisibility(View.VISIBLE);
+                    mCallSuspect.setText(number);
+                    mCrime.setPhoneNumber(number);
+                }
+                phones.close();
+            }
+            cursor.close();
         }
-
-
     }
 
     private void updateDate() {
@@ -222,9 +263,9 @@ public class CrimeFragment extends Fragment {
         } else {
             suspect = getString(R.string.crime_report_suspect, suspect);
         }
-
+        String phoneNumber = mCrime.getPhoneNumber();
         String report = getString(R.string.crime_report,
-                mCrime.getTitle(), dateString, solvedString, suspect);
+                mCrime.getTitle(), dateString, solvedString, suspect, phoneNumber);
 
         return report;
     }
