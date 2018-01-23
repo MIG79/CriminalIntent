@@ -4,13 +4,11 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import es.javautodidacta.criminalintent.database.CrimeBaseHelper;
@@ -23,6 +21,8 @@ public class CrimeLab {
     // DB handling
     private Context mContext;
     private SQLiteDatabase mDatabase;
+
+    private static final String TAG = "CrimeLab";
 
     public static CrimeLab get(Context context) {
         if(sCrimeLab == null) {
@@ -38,6 +38,7 @@ public class CrimeLab {
 
     public void addCrime(Crime c) {
         ContentValues values = getContentValues(c);
+        Log.e(TAG, "addCrime: " + c.getDate()); // DATE OK
         mDatabase.insert(CrimeDbSchema.CrimeTable.NAME, null, values);
     }
 
@@ -66,7 +67,9 @@ public class CrimeLab {
             }
 
             cursor.moveToFirst();
-            return cursor.getCrime();
+            Crime c = cursor.getCrime();
+            Log.e(TAG, "getCrime: " + c.getDate()); // BAD DATE
+            return c;
         }
     }
 
@@ -94,9 +97,10 @@ public class CrimeLab {
 
     private static ContentValues getContentValues(Crime crime) {
         ContentValues values = new ContentValues();
+        Log.e(TAG, "getContentValues: " + crime.getDate()); // DATE OK
         values.put(CrimeDbSchema.CrimeTable.Cols.UUID, crime.getId().toString());
-        values.put(CrimeDbSchema.CrimeTable.Cols.TITLE, crime.getTitle().toString());
-        values.put(CrimeDbSchema.CrimeTable.Cols.DATE, crime.getDate().toString());
+        values.put(CrimeDbSchema.CrimeTable.Cols.TITLE, crime.getTitle());
+        values.put(CrimeDbSchema.CrimeTable.Cols.DATE, crime.getDate().getTime());
         values.put(CrimeDbSchema.CrimeTable.Cols.SOLVED, crime.isSolved() ? 1 : 0);
         values.put(CrimeDbSchema.CrimeTable.Cols.SUSPECT, crime.getSuspect());
 

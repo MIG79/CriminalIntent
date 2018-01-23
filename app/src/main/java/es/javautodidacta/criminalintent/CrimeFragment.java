@@ -19,6 +19,7 @@ import android.support.v4.content.FileProvider;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,6 +40,8 @@ import java.util.UUID;
 
 public class CrimeFragment extends Fragment {
 
+    private static final String TAG = "CrimeFragment";
+
     private Crime mCrime;
     private File mPhotoFile;
 
@@ -52,6 +55,7 @@ public class CrimeFragment extends Fragment {
 
     private static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE = "DialogDate";
+    private static final String DIALOG_PHOTO = "DialogPhoto";
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_CONTACT = 1;
     public static final int REQUEST_PHOTO = 2;
@@ -62,6 +66,7 @@ public class CrimeFragment extends Fragment {
         UUID crimeId = (UUID) getArguments().getSerializable(ARG_CRIME_ID);
         mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);
         mPhotoFile = CrimeLab.get(getActivity()).getPhotoFile(mCrime);
+        Log.e(TAG, "onCreate: " + mPhotoFile);
         setHasOptionsMenu(true);
     }
 
@@ -85,18 +90,16 @@ public class CrimeFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_crime, container, false);
 
         mSuspectButton = v.findViewById(R.id.crime_suspect);
         final Intent pickContact = new Intent(Intent.ACTION_PICK,
                 ContactsContract.Contacts.CONTENT_URI);
-        mSuspectButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                startActivityForResult(pickContact, REQUEST_CONTACT);
-            }
-        });
+        mSuspectButton.setOnClickListener(view ->
+                startActivityForResult(pickContact, REQUEST_CONTACT));
 
         if(mCrime.getSuspect() != null) {
             mSuspectButton.setText(mCrime.getSuspect());
@@ -143,14 +146,11 @@ public class CrimeFragment extends Fragment {
 
         mDateButton = v.findViewById(R.id.crime_date);
         updateDate();
-        mDateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FragmentManager manager = getFragmentManager();
-                DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
-                dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
-                dialog.show(manager, DIALOG_DATE);
-            }
+        mDateButton.setOnClickListener(view -> {
+            FragmentManager manager = getFragmentManager();
+            DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
+            dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
+            dialog.show(manager, DIALOG_DATE);
         });
 
         mSolvedCheckBox = v.findViewById(R.id.crime_solved);
@@ -164,26 +164,29 @@ public class CrimeFragment extends Fragment {
         boolean canTakePhoto = mPhotoFile != null &&
                 captureImage.resolveActivity(packageManager) != null;
         mPhotoButton.setEnabled(canTakePhoto);
-        mPhotoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Uri uri = FileProvider.getUriForFile(getActivity(),
-                        "es.javautodidacta.criminalintent.fileprovider",
-                        mPhotoFile);
-                captureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+        mPhotoButton.setOnClickListener(view -> {
+            Uri uri = FileProvider.getUriForFile(getActivity(),
+                    "es.javautodidacta.criminalintent.fileprovider",
+                    mPhotoFile);
+            captureImage.putExtra(MediaStore.EXTRA_OUTPUT, uri);
 
-                List<ResolveInfo> cameraActivities = getActivity()
-                        .getPackageManager().queryIntentActivities(captureImage,
-                                PackageManager.MATCH_DEFAULT_ONLY);
-                for (ResolveInfo activity : cameraActivities) {
-                    getActivity().grantUriPermission(activity.activityInfo.packageName,
-                            uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                }
-
-                startActivityForResult(captureImage, REQUEST_PHOTO);
+            List<ResolveInfo> cameraActivities = getActivity()
+                    .getPackageManager().queryIntentActivities(captureImage,
+                            PackageManager.MATCH_DEFAULT_ONLY);
+            for (ResolveInfo activity : cameraActivities) {
+                getActivity().grantUriPermission(activity.activityInfo.packageName,
+                        uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             }
+
+            startActivityForResult(captureImage, REQUEST_PHOTO);
         });
         mPhotoView = v.findViewById(R.id.crime_photo);
+        mPhotoView.setOnClickListener(view -> {
+            FragmentManager manager = getFragmentManager();
+            ZoomedPhotoFragment dialog = ZoomedPhotoFragment.newInstance(mCrime.getId());
+            dialog.setTargetFragment(CrimeFragment.this, REQUEST_PHOTO);
+            dialog.show(manager, DIALOG_PHOTO);
+        });
         updatePhotoView();
         return v;
     }
@@ -211,6 +214,7 @@ public class CrimeFragment extends Fragment {
 
         if(requestCode == REQUEST_DATE) {
             Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+            Log.e(TAG, "onActivityResult: " + date.toString());
             mCrime.setDate(date);
             updateDate();
         } else if(requestCode == REQUEST_CONTACT && data != null) {

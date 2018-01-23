@@ -1,5 +1,7 @@
 package es.javautodidacta.criminalintent;
 
+import android.util.Log;
+
 import java.util.Date;
 import java.util.UUID;
 
@@ -10,6 +12,7 @@ public class Crime {
     private boolean mSolved;
     private boolean mRequiresPolice;
     private String mSuspect;
+    private static final String TAG = "Crime";
 
     public Crime() {
         this(UUID.randomUUID());
@@ -18,6 +21,7 @@ public class Crime {
     public Crime(UUID id) {
         mId = id;
         mDate = new Date();
+        Log.e(TAG, "Crime: " + mDate);
     }
 
     public String getSuspect() {
@@ -44,10 +48,12 @@ public class Crime {
     }
 
     public Date getDate() {
+        Log.e(TAG, "getDate: " + mDate);
         return mDate;
     }
 
     public void setDate(Date date) {
+        Log.e(TAG, "setDate: " + date);
         mDate = date;
     }
 

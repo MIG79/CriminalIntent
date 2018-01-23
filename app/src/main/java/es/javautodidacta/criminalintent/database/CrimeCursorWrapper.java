@@ -2,6 +2,7 @@ package es.javautodidacta.criminalintent.database;
 
 import android.database.Cursor;
 import android.database.CursorWrapper;
+import android.util.Log;
 
 import java.util.Date;
 import java.util.UUID;
@@ -18,6 +19,8 @@ import es.javautodidacta.criminalintent.database.CrimeDbSchema.CrimeTable.Cols;
 
 public class CrimeCursorWrapper extends CursorWrapper {
 
+    private static final String TAG = "CrimeCursorWrapper";
+
     public CrimeCursorWrapper(Cursor cursor) {
         super(cursor);
     }
@@ -31,6 +34,7 @@ public class CrimeCursorWrapper extends CursorWrapper {
 
         Crime crime = new Crime(UUID.fromString(uuidString));
         crime.setTitle(title);
+        Log.e(TAG, "getCrime: " + date); // BAD DATE
         crime.setDate(new Date(date));
         crime.setSolved(isSolved != 0);
         crime.setSuspect(suspect);
