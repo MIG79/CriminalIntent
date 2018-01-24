@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -26,6 +27,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -40,11 +42,15 @@ import java.util.UUID;
 
 public class CrimeFragment extends Fragment {
 
+    public static final int REQUEST_PHOTO = 2;
     private static final String TAG = "CrimeFragment";
-
+    private static final String ARG_CRIME_ID = "crime_id";
+    private static final String DIALOG_DATE = "DialogDate";
+    private static final String DIALOG_PHOTO = "DialogPhoto";
+    private static final int REQUEST_DATE = 0;
+    private static final int REQUEST_CONTACT = 1;
     private Crime mCrime;
     private File mPhotoFile;
-
     private EditText mTitleField;
     private Button mDateButton;
     private CheckBox mSolvedCheckBox;
@@ -52,13 +58,16 @@ public class CrimeFragment extends Fragment {
     private Button mSuspectButton;
     private ImageButton mPhotoButton;
     private ImageView mPhotoView;
+    private Point mPhotoViewSize;
 
-    private static final String ARG_CRIME_ID = "crime_id";
-    private static final String DIALOG_DATE = "DialogDate";
-    private static final String DIALOG_PHOTO = "DialogPhoto";
-    private static final int REQUEST_DATE = 0;
-    private static final int REQUEST_CONTACT = 1;
-    public static final int REQUEST_PHOTO = 2;
+    public static CrimeFragment newInstance(UUID crimeId) {
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_CRIME_ID, crimeId);
+
+        CrimeFragment fragment = new CrimeFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -187,6 +196,23 @@ public class CrimeFragment extends Fragment {
             dialog.setTargetFragment(CrimeFragment.this, REQUEST_PHOTO);
             dialog.show(manager, DIALOG_PHOTO);
         });
+
+        mPhotoView.getViewTreeObserver()
+                .addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        boolean isFirstPass = (mPhotoViewSize == null);
+                        mPhotoViewSize = new Point();
+                        mPhotoViewSize.set(mPhotoView.getWidth(), mPhotoView.getHeight());
+
+                        if (isFirstPass) {
+                            updatePhotoView();
+                        }
+
+                        mPhotoView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    }
+                });
+
         updatePhotoView();
         return v;
     }
@@ -195,15 +221,6 @@ public class CrimeFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_crime, menu);
-    }
-
-    public static CrimeFragment newInstance(UUID crimeId) {
-        Bundle args = new Bundle();
-        args.putSerializable(ARG_CRIME_ID, crimeId);
-
-        CrimeFragment fragment = new CrimeFragment();
-        fragment.setArguments(args);
-        return fragment;
     }
 
     @Override
@@ -255,8 +272,13 @@ public class CrimeFragment extends Fragment {
         if(mPhotoFile == null || !mPhotoFile.exists()) {
             mPhotoView.setImageDrawable(null);
         } else {
-            Bitmap bitmap = PictureUtils.getScaledBitmap(
-                    mPhotoFile.getPath(), getActivity());
+
+            Bitmap bitmap = (mPhotoViewSize == null) ?
+                    PictureUtils
+                            .getScaledBitmap(mPhotoFile.getPath(), getActivity()) :
+                    PictureUtils
+                            .getScaledBitmap(mPhotoFile.getPath(),
+                                    mPhotoViewSize.x, mPhotoViewSize.y);
             mPhotoView.setImageBitmap(bitmap);
         }
     }
