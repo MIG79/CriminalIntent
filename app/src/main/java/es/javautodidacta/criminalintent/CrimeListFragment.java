@@ -265,13 +265,20 @@ public class CrimeListFragment extends Fragment {
                 }
             }
             notifyItemMoved(fromPosition, toPosition);
+
+            for(Crime crime : mCrimes) {
+                CrimeLab.get(getActivity()).deleteCrime(crime);
+                CrimeLab.get(getActivity()).addCrime(crime);
+            }
+
             return true;
         }
 
         @Override
         public void onItemDismiss(int position) {
-            mCrimes.remove(position);
+            Crime crime = mCrimes.remove(position);
             notifyItemRemoved(position);
+            CrimeLab.get(getActivity()).deleteCrime(crime);
         }
     }
 }
