@@ -28,11 +28,14 @@ import java.util.List;
 public class CrimeListFragment extends Fragment {
 
     private static final String SAVED_SUBTITLE_VISIBLE = "subtitle";
+
     private RecyclerView mCrimeRecyclerView;
     private TextView mNoCrimeTitle;
     private Button mNoCrimeButton;
     private CrimeAdapter mAdapter;
+
     private boolean mSubtitleVisible;
+
     private Callbacks mCallBacks;
 
     /**
@@ -279,6 +282,7 @@ public class CrimeListFragment extends Fragment {
             Crime crime = mCrimes.remove(position);
             notifyItemRemoved(position);
             CrimeLab.get(getActivity()).deleteCrime(crime);
+            updateUI();
         }
     }
 }
