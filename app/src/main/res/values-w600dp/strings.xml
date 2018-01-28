@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="no_crimes_button_description">There are no crimes. Create one.</string>
+    <string name="Crime_commited">Crime commited on</string>
+    <string name="crime_solved">Crime solved</string>
+</resources>

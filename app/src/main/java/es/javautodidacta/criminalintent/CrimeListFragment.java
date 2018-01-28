@@ -72,6 +72,7 @@ public class CrimeListFragment extends Fragment {
 
         mNoCrimeTitle = view.findViewById(R.id.no_crimes);
         mNoCrimeButton = view.findViewById(R.id.no_crimes_button);
+        mNoCrimeButton.setContentDescription(getString(R.string.no_crimes_button_description));
         mNoCrimeButton.setOnClickListener(v -> {
             Crime crime = new Crime();
             CrimeLab.get(getActivity()).addCrime(crime);
@@ -214,8 +215,15 @@ public class CrimeListFragment extends Fragment {
             Date date = mCrime.getDate();
             String dateToPrint = dateFormat.format(date);
             mTitleTextView.setText(mCrime.getTitle());
+            mTitleTextView.setContentDescription(mCrime.getTitle());
             mDateTextView.setText(dateToPrint);
-            mSolvedImageView.setVisibility(crime.isSolved() ? View.VISIBLE : View.INVISIBLE);
+            mDateTextView.setContentDescription(getString(R.string.Crime_commited) + dateToPrint);
+            if(crime.isSolved()) {
+                mSolvedImageView.setVisibility(View.VISIBLE);
+                mSolvedImageView.setContentDescription(getString(R.string.crime_solved));
+            } else {
+                mSolvedImageView.setVisibility(View.INVISIBLE);
+            }
         }
 
         @Override
