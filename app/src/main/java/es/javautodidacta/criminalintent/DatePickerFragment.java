@@ -26,7 +26,7 @@ public class DatePickerFragment extends DialogFragment {
     public static final String EXTRA_DATE = "es.javautodidacta.criminalintent.date";
     private Button mOkButton;
 
-    public static DatePickerFragment newInstance(Date date) {
+    public static DatePickerFragment newInstance(String date) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_DATE, date);
 

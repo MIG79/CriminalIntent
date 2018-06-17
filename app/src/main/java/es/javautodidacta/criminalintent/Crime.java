@@ -1,27 +1,33 @@
 package es.javautodidacta.criminalintent;
 
-import android.util.Log;
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
+import android.support.annotation.NonNull;
 
 import java.util.Date;
 import java.util.UUID;
-
+@Entity
 public class Crime {
-    private UUID mId;
+    @PrimaryKey
+    @NonNull
+    private String mId;
+    @ColumnInfo(name="title")
     private String mTitle = "";
-    private Date mDate;
+    @ColumnInfo(name="date")
+    private String mDate;
+    @ColumnInfo(name="solved")
     private boolean mSolved;
-    private boolean mRequiresPolice;
+    @ColumnInfo(name="suspect")
     private String mSuspect;
-    private static final String TAG = "Crime";
 
     public Crime() {
-        this(UUID.randomUUID());
+        this(UUID.randomUUID().toString());
     }
 
-    public Crime(UUID id) {
+    public Crime(@NonNull String id) {
         mId = id;
-        mDate = new Date();
-        Log.e(TAG, "Crime: " + mDate);
+        mDate = new Date().toString();
     }
 
     public String getSuspect() {
@@ -33,9 +39,13 @@ public class Crime {
     }
 
     public String getPhotoFilename(){
-        return "IMG_" + getId().toString() + ".jpg";
+        return "IMG_" + getId() + ".jpg";
     }
-    public UUID getId() {
+    public void setId(@NonNull String id) {
+        mId = id;
+    }
+    @NonNull
+    public String getId() {
         return mId;
     }
 
@@ -47,13 +57,11 @@ public class Crime {
         mTitle = title;
     }
 
-    public Date getDate() {
-        Log.e(TAG, "getDate: " + mDate);
+    public String getDate() {
         return mDate;
     }
 
-    public void setDate(Date date) {
-        Log.e(TAG, "setDate: " + date);
+    public void setDate(String date) {
         mDate = date;
     }
 
@@ -63,13 +71,5 @@ public class Crime {
 
     public void setSolved(boolean solved) {
         mSolved = solved;
-    }
-
-    public boolean isRequiresPolice() {
-        return mRequiresPolice;
-    }
-
-    public void setRequiresPolice(boolean requiresPolice) {
-        mRequiresPolice = requiresPolice;
     }
 }

@@ -11,11 +11,6 @@ public class CrimeListActivity extends SingleFragmentActivity
     }
 
     @Override
-    protected int getLayoutResId() {
-        return R.layout.activity_masterdetail;
-    }
-
-    @Override
     public void onCrimeSelected(Crime crime) {
         if(findViewById(R.id.detail_fragment_container) == null) {
             Intent intent = CrimePagerActivity.newIntent(this, crime.getId());

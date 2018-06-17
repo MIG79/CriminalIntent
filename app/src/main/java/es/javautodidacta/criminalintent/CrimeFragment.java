@@ -20,8 +20,6 @@ import android.support.v4.app.ShareCompat;
 import android.support.v4.content.FileProvider;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -37,14 +35,12 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import java.io.File;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
+import java.util.Objects;
 
 public class CrimeFragment extends Fragment {
 
     public static final int REQUEST_PHOTO = 2;
-    private static final String TAG = "CrimeFragment";
     private static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE = "DialogDate";
     private static final String DIALOG_PHOTO = "DialogPhoto";
@@ -53,6 +49,7 @@ public class CrimeFragment extends Fragment {
 
     private Crime mCrime;
     private File mPhotoFile;
+
     private EditText mTitleField;
     private Button mDateButton;
     private CheckBox mSolvedCheckBox;
@@ -60,6 +57,7 @@ public class CrimeFragment extends Fragment {
     private Button mSuspectButton;
     private ImageButton mPhotoButton;
     private ImageView mPhotoView;
+
     private Point mPhotoViewSize;
     private Callbacks mCallbacks;
 
@@ -70,7 +68,7 @@ public class CrimeFragment extends Fragment {
         void onCrimeUpdated(Crime crime);
     }
 
-    public static CrimeFragment newInstance(UUID crimeId) {
+    public static CrimeFragment newInstance(String crimeId) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_CRIME_ID, crimeId);
 
@@ -88,10 +86,10 @@ public class CrimeFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        UUID crimeId = (UUID) getArguments().getSerializable(ARG_CRIME_ID);
+        assert getArguments() != null;
+        String crimeId = (String) getArguments().getSerializable(ARG_CRIME_ID);
         mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);
         mPhotoFile = CrimeLab.get(getActivity()).getPhotoFile(mCrime);
-        Log.e(TAG, "onCreate: " + mPhotoFile);
         setHasOptionsMenu(true);
     }
 
@@ -112,7 +110,7 @@ public class CrimeFragment extends Fragment {
         switch(item.getItemId()) {
             case R.id.delete_crime:
                 CrimeLab.get(getActivity()).deleteCrime(mCrime);
-                getActivity().finish();
+                Objects.requireNonNull(getActivity()).finish();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -136,7 +134,7 @@ public class CrimeFragment extends Fragment {
             mSuspectButton.setText(mCrime.getSuspect());
         }
 
-        PackageManager packageManager = getActivity().getPackageManager();
+        PackageManager packageManager = Objects.requireNonNull(getActivity()).getPackageManager();
         if(packageManager.resolveActivity(pickContact,
                 PackageManager.MATCH_DEFAULT_ONLY) == null) {
             mSuspectButton.setEnabled(false);
@@ -182,6 +180,7 @@ public class CrimeFragment extends Fragment {
             FragmentManager manager = getFragmentManager();
             DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
             dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
+            assert manager != null;
             dialog.show(manager, DIALOG_DATE);
         });
 
@@ -220,6 +219,7 @@ public class CrimeFragment extends Fragment {
             FragmentManager manager = getFragmentManager();
             ZoomedPhotoFragment dialog = ZoomedPhotoFragment.newInstance(mCrime.getId());
             dialog.setTargetFragment(CrimeFragment.this, REQUEST_PHOTO);
+            assert manager != null;
             dialog.show(manager, DIALOG_PHOTO);
         });
 
@@ -256,8 +256,7 @@ public class CrimeFragment extends Fragment {
         }
 
         if(requestCode == REQUEST_DATE) {
-            Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
-            Log.e(TAG, "onActivityResult: " + date.toString());
+            String date = (String) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             mCrime.setDate(date);
             updateCrime();
             updateDate();
@@ -271,11 +270,11 @@ public class CrimeFragment extends Fragment {
             };
 
             // Perform your query - the contactUri is like a "where" clause here
-            try(Cursor c = getActivity().getContentResolver()
-                    .query(contactUri, queryFields, null, null, null)) {
+            try(Cursor c = Objects.requireNonNull(getActivity()).getContentResolver()
+                                  .query(Objects.requireNonNull(contactUri), queryFields, null, null, null)) {
 
                 // Double-check that you actually got results
-                if(c.getCount() == 0) {
+                if(Objects.requireNonNull(c).getCount() == 0) {
                     return;
                 }
 
@@ -287,9 +286,9 @@ public class CrimeFragment extends Fragment {
                 mSuspectButton.setText(suspect);
             }
         } else if(requestCode == REQUEST_PHOTO) {
-            Uri uri = FileProvider.getUriForFile(getActivity(),
-                    "es.javautodidacta.criminalintent.fileprovider",
-                    mPhotoFile);
+            Uri uri = FileProvider.getUriForFile(Objects.requireNonNull(getActivity()),
+                                                 "es.javautodidacta.criminalintent.fileprovider",
+                                                 mPhotoFile);
             getActivity().revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
             updateCrime();
@@ -310,7 +309,8 @@ public class CrimeFragment extends Fragment {
 
             Bitmap bitmap = (mPhotoViewSize == null) ?
                     PictureUtils
-                            .getScaledBitmap(mPhotoFile.getPath(), getActivity()) :
+                            .getScaledBitmap(mPhotoFile.getPath(),
+                                             Objects.requireNonNull(getActivity())) :
                     PictureUtils
                             .getScaledBitmap(mPhotoFile.getPath(),
                                     mPhotoViewSize.x, mPhotoViewSize.y);
@@ -320,7 +320,7 @@ public class CrimeFragment extends Fragment {
     }
 
     private void updateDate() {
-        mDateButton.setText(mCrime.getDate().toString());
+        mDateButton.setText(mCrime.getDate());
     }
 
     private String getCrimeReport() {
@@ -331,8 +331,7 @@ public class CrimeFragment extends Fragment {
             solvedString = getString(R.string.crime_report_unsolved);
         }
 
-        String dateFormat = "EEE, MMM, dd";
-        String dateString = DateFormat.format(dateFormat, mCrime.getDate()).toString();
+        String dateString = mCrime.getDate();
 
         String suspect = mCrime.getSuspect();
         if(suspect == null) {
@@ -341,9 +340,7 @@ public class CrimeFragment extends Fragment {
             suspect = getString(R.string.crime_report_suspect, suspect);
         }
 
-        String report = getString(R.string.crime_report,
+        return getString(R.string.crime_report,
                 mCrime.getTitle(), dateString, solvedString, suspect);
-
-        return report;
     }
 }

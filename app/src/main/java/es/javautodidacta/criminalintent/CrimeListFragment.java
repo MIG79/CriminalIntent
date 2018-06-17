@@ -20,10 +20,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.text.DateFormat;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 public class CrimeListFragment extends Fragment {
 
@@ -166,7 +165,7 @@ public class CrimeListFragment extends Fragment {
                 return true;
             case R.id.show_subtitle:
                 mSubtitleVisible = !mSubtitleVisible;
-                getActivity().invalidateOptionsMenu();
+                Objects.requireNonNull(getActivity()).invalidateOptionsMenu();
                 updateSubtitle();
                 return true;
             default:
@@ -188,7 +187,8 @@ public class CrimeListFragment extends Fragment {
         }
 
         AppCompatActivity activity = (AppCompatActivity) getActivity();
-        activity.getSupportActionBar().setSubtitle(subtitle);
+        assert activity != null;
+        Objects.requireNonNull(activity.getSupportActionBar()).setSubtitle(subtitle);
     }
 
     private class CrimeHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -198,7 +198,7 @@ public class CrimeListFragment extends Fragment {
         private Crime mCrime;
         private ImageView mSolvedImageView;
 
-        public CrimeHolder(LayoutInflater inflater, ViewGroup parent) {
+        CrimeHolder(LayoutInflater inflater, ViewGroup parent) {
             super(inflater.inflate(R.layout.list_item_crime, parent, false));
             //itemView is inherited from ViewHolder.
             mTitleTextView = itemView.findViewById(R.id.crime_title);
@@ -210,10 +210,7 @@ public class CrimeListFragment extends Fragment {
 
         public void bind(Crime crime) {
             mCrime = crime;
-            // DateFormat dateFormat = new SimpleDateFormat("EEEE, MMMM dd, yyyy", Locale.getDefault());
-            DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
-            Date date = mCrime.getDate();
-            String dateToPrint = dateFormat.format(date);
+            String dateToPrint = mCrime.getDate();
             mTitleTextView.setText(mCrime.getTitle());
             mTitleTextView.setContentDescription(mCrime.getTitle());
             mDateTextView.setText(dateToPrint);
@@ -238,23 +235,24 @@ public class CrimeListFragment extends Fragment {
 
         private List<Crime> mCrimes;
 
-        public CrimeAdapter(List<Crime> crimes) {
+        CrimeAdapter(List<Crime> crimes) {
             mCrimes = crimes;
         }
 
-        public void setCrimes(List<Crime> crimes) {
+        void setCrimes(List<Crime> crimes) {
             mCrimes = crimes;
         }
 
+        @NonNull
         @Override
-        public CrimeHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public CrimeHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
             return new CrimeHolder(layoutInflater, parent);
         }
 
         @Override
-        public void onBindViewHolder(CrimeHolder holder, int position) {
+        public void onBindViewHolder(@NonNull CrimeHolder holder, int position) {
             Crime crime = mCrimes.get(position);
             holder.bind(crime);
         }
@@ -265,7 +263,7 @@ public class CrimeListFragment extends Fragment {
         }
 
         @Override
-        public boolean onItemMove(int fromPosition, int toPosition) {
+        public void onItemMove(int fromPosition, int toPosition) {
             if (fromPosition < toPosition) {
                 for (int i = fromPosition; i < toPosition; i++) {
                     Collections.swap(mCrimes, i, i + 1);
@@ -282,7 +280,6 @@ public class CrimeListFragment extends Fragment {
                 CrimeLab.get(getActivity()).addCrime(crime);
             }
 
-            return true;
         }
 
         @Override

@@ -19,7 +19,7 @@ public class CrimePagerActivity extends AppCompatActivity implements CrimeFragme
     private List<Crime> mCrimes;
     private static final String EXTRA_CRIME_ID = "es.javautodidacta.criminalintent.crime_id";
 
-    public static Intent newIntent(Context packageContext, UUID crimeId) {
+    public static Intent newIntent(Context packageContext, String crimeId) {
         Intent intent = new Intent(packageContext, CrimePagerActivity.class);
         intent.putExtra(EXTRA_CRIME_ID, crimeId);
         return intent;
@@ -30,7 +30,7 @@ public class CrimePagerActivity extends AppCompatActivity implements CrimeFragme
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crime_pager);
 
-        UUID crimeId = (UUID) getIntent().getSerializableExtra(EXTRA_CRIME_ID);
+        String crimeId = (String) getIntent().getSerializableExtra(EXTRA_CRIME_ID);
 
         mViewPager = findViewById(R.id.crime_view_pager);
 
