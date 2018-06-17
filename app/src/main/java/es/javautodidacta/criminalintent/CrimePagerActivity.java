@@ -1,5 +1,6 @@
 package es.javautodidacta.criminalintent;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,7 +12,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 
 import java.util.List;
-import java.util.UUID;
 
 public class CrimePagerActivity extends AppCompatActivity implements CrimeFragment.Callbacks {
 
@@ -61,5 +61,15 @@ public class CrimePagerActivity extends AppCompatActivity implements CrimeFragme
     @Override
     public void onCrimeUpdated(Crime crime) {
 
+    }
+
+    /**
+     * Method to be executed when single layout used.
+     *
+     * @param activity The container of the fragment.
+     */
+    @Override
+    public void onCrimeDeleted(Activity activity) {
+        activity.finish();
     }
 }

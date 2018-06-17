@@ -1,7 +1,6 @@
 package es.javautodidacta.criminalintent;
 
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -23,11 +22,11 @@ public abstract class SingleFragmentActivity extends AppCompatActivity {
         setContentView(getLayoutResId());
 
         FragmentManager fm = getSupportFragmentManager();
-        Fragment fragment = fm.findFragmentById(R.id.fragment_container);
+        Fragment listFragment = fm.findFragmentById(R.id.list_fragment);
 
-        if(fragment == null) {
-            fragment = createFragment();
-            fm.beginTransaction().add(R.id.fragment_container, fragment).commit();
+        if (listFragment == null) {
+            listFragment = createFragment();
+            fm.beginTransaction().add(R.id.list_fragment, listFragment).commit();
         }
     }
 }

@@ -1,7 +1,6 @@
 package es.javautodidacta.criminalintent;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -29,10 +28,12 @@ public class CrimeListFragment extends Fragment {
     private static final String SAVED_SUBTITLE_VISIBLE = "subtitle";
 
     private RecyclerView mCrimeRecyclerView;
-    private TextView mNoCrimeTitle;
-    private Button mNoCrimeButton;
     private CrimeAdapter mAdapter;
 
+    private CrimeLab mCrimeLab;
+
+    private TextView mNoCrimeTitle;
+    private Button mNoCrimeButton;
     private boolean mSubtitleVisible;
 
     private Callbacks mCallBacks;
@@ -53,6 +54,7 @@ public class CrimeListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mCrimeLab = CrimeLab.get(getActivity());
         setHasOptionsMenu(true);
     }
 
@@ -74,9 +76,9 @@ public class CrimeListFragment extends Fragment {
         mNoCrimeButton.setContentDescription(getString(R.string.no_crimes_button_description));
         mNoCrimeButton.setOnClickListener(v -> {
             Crime crime = new Crime();
-            CrimeLab.get(getActivity()).addCrime(crime);
-            Intent intent = CrimePagerActivity.newIntent(getActivity(), crime.getId());
-            startActivity(intent);
+            mCrimeLab.addCrime(crime);
+            updateUI();
+            mCallBacks.onCrimeSelected(crime);
         });
 
         if (savedInstanceState != null) {
@@ -84,6 +86,7 @@ public class CrimeListFragment extends Fragment {
         }
 
         mCrimeRecyclerView = view.findViewById(R.id.crime_recycler_view);
+        mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         updateUI();
 
@@ -91,8 +94,6 @@ public class CrimeListFragment extends Fragment {
                 new SwipeController(mAdapter);
         ItemTouchHelper touchHelper = new ItemTouchHelper(swipeController);
         touchHelper.attachToRecyclerView(mCrimeRecyclerView);
-
-        mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         return view;
     }
@@ -104,8 +105,7 @@ public class CrimeListFragment extends Fragment {
     }
 
     public void updateUI() {
-        CrimeLab crimeLab = CrimeLab.get(getActivity());
-        List<Crime> crimes = crimeLab.getCrimes();
+        List<Crime> crimes = mCrimeLab.getCrimes();
 
         if(crimes.size() == 0) {
             mNoCrimeButton.setVisibility(View.VISIBLE);
@@ -159,7 +159,7 @@ public class CrimeListFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.new_crime:
                 Crime crime = new Crime();
-                CrimeLab.get(getActivity()).addCrime(crime);
+                mCrimeLab.addCrime(crime);
                 updateUI();
                 mCallBacks.onCrimeSelected(crime);
                 return true;
@@ -177,8 +177,7 @@ public class CrimeListFragment extends Fragment {
      * This method shows a subtitle (number of crimes) under the title in the toolbar.
      */
     private void updateSubtitle() {
-        CrimeLab crimeLab = CrimeLab.get(getActivity());
-        int crimeCount = crimeLab.getCrimes().size();
+        int crimeCount = mCrimeLab.getCrimes().size();
         String subtitle = getResources()
                 .getQuantityString(R.plurals.subtitle_plural, crimeCount, crimeCount);
 
@@ -276,17 +275,16 @@ public class CrimeListFragment extends Fragment {
             notifyItemMoved(fromPosition, toPosition);
 
             for(Crime crime : mCrimes) {
-                CrimeLab.get(getActivity()).deleteCrime(crime);
-                CrimeLab.get(getActivity()).addCrime(crime);
+                mCrimeLab.deleteCrime(crime);
+                mCrimeLab.addCrime(crime);
             }
-
         }
 
         @Override
         public void onItemDismiss(int position) {
             Crime crime = mCrimes.remove(position);
             notifyItemRemoved(position);
-            CrimeLab.get(getActivity()).deleteCrime(crime);
+            mCrimeLab.deleteCrime(crime);
             updateUI();
         }
     }

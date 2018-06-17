@@ -33,4 +33,5 @@
     <string name="no_crimes_button_description">There are no crimes. Create one.</string>
     <string name="Crime_commited">Crime commited on</string>
     <string name="crime_solved">Crime solved</string>
+    <string name="crime_not_selected">Crime not selected!</string>
 </resources>
